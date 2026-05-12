@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presupuesto Abierto — Explorador de API</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.8.0/dist/tabler-icons.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --surface2: #f1efea;
+      --border: rgba(0,0,0,0.1);
+      --border-md: rgba(0,0,0,0.18);
+      --text: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-tertiary: #9b9990;
+      --accent: #185FA5;
+      --accent-bg: #E6F1FB;
+      --accent-text: #0C447C;
+      --success: #3B6D11;
+      --success-bg: #EAF3DE;
+      --danger: #A32D2D;
+      --danger-bg: #FCEBEB;
+      --warning: #854F0B;
+      --warning-bg: #FAEEDA;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: 'DM Sans', system-ui, sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+    [data-theme="dark"] {
+      --bg: #18181a;
+      --surface: #222224;
+      --surface2: #2a2a2c;
+      --border: rgba(255,255,255,0.1);
+      --border-md: rgba(255,255,255,0.18);
+      --text: #f0ede6;
+      --text-secondary: #b0ada6;
+      --text-tertiary: #70706a;
+      --accent: #378ADD;
+      --accent-bg: #0c2a44;
+      --accent-text: #85B7EB;
+      --success-bg: #1a2e10;
+      --success: #97C459;
+      --danger-bg: #2e1010;
+      --danger: #F09595;
+      --warning-bg: #2e1f08;
+      --warning: #EF9F27;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+    }
+    .logo-sub { font-size: 12px; color: var(--text-tertiary); font-weight: 400; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .theme-btn {
+      background: transparent;
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-family: var(--font);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .theme-btn:hover { background: var(--surface2); color: var(--text); }
+
+    /* Layout */
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Sections */
+    .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .page-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 2rem; }
+
+    .card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Form elements */
+    label { font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 5px; }
+    input, select {
+      width: 100%;
+      background: var(--surface2);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(24,95,165,0.12); }
+    input[type="password"] { font-family: var(--mono); }
+    input::placeholder { color: var(--text-tertiary); }
+
+    .btn {
+      background: transparent;
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      padding: 8px 16px;
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--surface2); }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      background: var(--accent);
+      border-color: transparent;
+      color: white;
+      font-weight: 500;
+    }
+    .btn-primary:hover { background: var(--accent-text); }
+
+    .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+    .col { flex: 1; min-width: 120px; }
+    .col-auto { flex: 0 0 auto; }
+
+    /* Token section */
+    .token-hint {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 8px;
+    }
+    .token-hint a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .token-hint a:hover { text-decoration: underline; }
+    .token-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+    .token-status.ok { background: var(--success-bg); color: var(--success); }
+    .token-status.empty { background: var(--warning-bg); color: var(--warning); }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .tab {
+      background: transparent;
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      padding: 7px 16px;
+      font-size: 13px;
+      font-family: var(--font);
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+    .tab:hover { background: var(--surface2); color: var(--text); }
+    .tab.active {
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border-color: transparent;
+      font-weight: 500;
+    }
+
+    /* Filters */
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.25rem;
+    }
+    .endpoint-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--accent);
+    }
+
+    /* Results */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+    .stat {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+    }
+    .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    .stat-val { font-size: 20px; font-weight: 500; color: var(--text); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .badge-success { background: var(--success-bg); color: var(--success); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); }
+
+    .error-box {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { position: sticky; top: 56px; z-index: 10; }
+    th {
+      background: var(--surface2);
+      text-align: left;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 12px;
+      padding: 8px 12px;
+      border-bottom: 0.5px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    th:hover { background: var(--surface); color: var(--text); }
+    th .sort-icon { opacity: 0.4; font-size: 10px; margin-left: 4px; }
+    th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+    td {
+      padding: 8px 12px;
+      border-bottom: 0.5px solid var(--border);
+      color: var(--text);
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+    .num-cell { text-align: right; font-family: var(--mono); font-size: 12px; }
+
+    /* Pagination */
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 1rem;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .pager-btns { display: flex; gap: 6px; align-items: center; }
+
+    /* Search bar for results */
+    .result-search {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .result-search input { max-width: 280px; }
+
+    /* Export */
+    .export-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    /* Empty/loading */
+    .empty {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+    .empty i { font-size: 40px; display: block; margin-bottom: 1rem; opacity: 0.4; }
+
+    /* Loading spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.8s linear infinite; display: inline-block; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      main { padding: 1rem; }
+      header { padding: 0 1rem; }
+      .page-title { font-size: 18px; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon"><i class="ti ti-building-bank" aria-hidden="true"></i></div>
+    <div>
+      <div>Presupuesto Abierto</div>
+      <div class="logo-sub">Explorador de API — Argentina</div>
+    </div>
+  </a>
+  <div class="header-right">
+    <a href="https://www.presupuestoabierto.gob.ar/api/" target="_blank" class="btn" style="font-size:13px">
+      <i class="ti ti-external-link" aria-hidden="true"></i>
+      Documentación
+    </a>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">
+      <i class="ti ti-moon" aria-hidden="true"></i>
+      Oscuro
+    </button>
+  </div>
+</header>
+
+<main>
+  <h1 class="page-title">Explorador de Presupuesto Nacional</h1>
+  <p class="page-subtitle">Consultá datos de crédito, recursos y ejecución del presupuesto nacional de Argentina.</p>
+
+  <!-- Token -->
+  <div class="card">
+    <div class="card-title"><i class="ti ti-lock" aria-hidden="true"></i> Autenticación</div>
+    <div class="row">
+      <div class="col">
+        <label for="tokenInput">Bearer token de acceso</label>
+        <input type="password" id="tokenInput" placeholder="Ingresá tu token..." autocomplete="off" oninput="onTokenChange()" />
+      </div>
+      <div class="col-auto" style="padding-bottom:0">
+        <button class="btn btn-primary" onclick="saveToken()" id="saveBtn">
+          <i class="ti ti-check" aria-hidden="true"></i> Guardar
+        </button>
+      </div>
+    </div>
+    <p class="token-hint">
+      Obtené tu token en
+      <a href="https://www.presupuestoabierto.gob.ar/sici/api-pac" target="_blank">
+        presupuestoabierto.gob.ar/sici/api-pac
+      </a>.
+      El token se guarda solo en tu navegador (localStorage) y nunca se envía a ningún servidor externo.
+    </p>
+  </div>
+
+  <!-- Query -->
+  <div class="card">
+    <div class="card-title"><i class="ti ti-database" aria-hidden="true"></i> Consulta</div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab active" onclick="setTab('credito', this)">
+        <i class="ti ti-report-money" aria-hidden="true"></i> Crédito
+      </button>
+      <button class="tab" onclick="setTab('recurso', this)">
+        <i class="ti ti-cash" aria-hidden="true"></i> Recursos
+      </button>
+      <button class="tab" onclick="setTab('pef', this)">
+        <i class="ti ti-target" aria-hidden="true"></i> Prog. física
+      </button>
+      <button class="tab" onclick="setTab('transversal_financiero', this)">
+        <i class="ti ti-arrows-transfer-up" aria-hidden="true"></i> Transversal
+      </button>
+    </div>
+
+    <div id="endpointDesc" class="endpoint-desc"></div>
+    <div class="filters-grid" id="filters"></div>
+
+    <div class="row">
+      <div class="col-auto">
+        <button class="btn btn-primary" onclick="runQuery()" id="runBtn">
+          <i class="ti ti-search" aria-hidden="true"></i> Consultar
+        </button>
+      </div>
+      <div class="col-auto">
+        <button class="btn" onclick="clearFilters()">
+          <i class="ti ti-refresh" aria-hidden="true"></i> Limpiar
+        </button>
+      </div>
+      <div style="flex:1"></div>
+      <div class="col-auto">
+        <label for="formatSel" style="margin-bottom:5px">Formato</label>
+        <select id="formatSel" style="width:90px">
+          <option value="json">JSON</option>
+          <option value="csv">CSV</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultSection" style="display:none">
+    <div id="errorBox" style="display:none" class="error-box">
+      <i class="ti ti-alert-circle" aria-hidden="true" style="font-size:18px;flex-shrink:0;margin-top:1px"></i>
+      <span id="errorMsg"></span>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="card" style="padding:1rem 1.25rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1rem">
+        <div class="result-search" style="margin:0">
+          <input type="text" id="searchInput" placeholder="Buscar en resultados..." style="max-width:260px" oninput="filterTable()" />
+        </div>
+        <div class="export-row" style="margin:0">
+          <button class="btn" onclick="exportCSV()" id="exportBtn" style="display:none">
+            <i class="ti ti-download" aria-hidden="true"></i> Exportar CSV
+          </button>
+          <button class="btn" onclick="exportJSON()" id="exportJsonBtn" style="display:none">
+            <i class="ti ti-code" aria-hidden="true"></i> Exportar JSON
+          </button>
+        </div>
+      </div>
+
+      <div id="tableContainer">
+        <div class="empty">
+          <i class="ti ti-database-off" aria-hidden="true"></i>
+          Sin datos aún. Realizá una consulta.
+        </div>
+      </div>
+
+      <div class="pager" id="pager"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const ENDPOINTS = {
+  credito: {
+    label: 'Crédito del presupuesto',
+    path: '/credito',
+    desc: 'Datos de crédito del presupuesto nacional en sus diferentes etapas: inicial, vigente, comprometido, devengado y pagado.',
+    filters: [
+      { key: 'ejercicio', label: 'Ejercicio (año)', type: 'number', placeholder: '2024' },
+      { key: 'jurisdiccion', label: 'Jurisdicción', type: 'text', placeholder: 'ej: 80' },
+      { key: 'entidad', label: 'Entidad', type: 'text', placeholder: 'ej: 206' },
+      { key: 'programa', label: 'Programa', type: 'text', placeholder: 'ej: 1' },
+      { key: 'finalidad', label: 'Finalidad', type: 'text', placeholder: 'ej: 3' },
+      { key: 'funcion', label: 'Función', type: 'text', placeholder: 'ej: 10' },
+    ]
+  },
+  recurso: {
+    label: 'Recursos del presupuesto',
+    path: '/recurso',
+    desc: 'Ingresos y recursos del presupuesto nacional por rubro, tipo y fuente de financiamiento.',
+    filters: [
+      { key: 'ejercicio', label: 'Ejercicio (año)', type: 'number', placeholder: '2024' },
+      { key: 'jurisdiccion', label: 'Jurisdicción', type: 'text', placeholder: 'ej: 80' },
+      { key: 'entidad', label: 'Entidad', type: 'text', placeholder: 'ej: 206' },
+      { key: 'rubro', label: 'Rubro', type: 'text', placeholder: 'ej: 1' },
+    ]
+  },
+  pef: {
+    label: 'Programación y ejecución física',
+    path: '/pef',
+    desc: 'Metas físicas de los programas presupuestarios: programadas y ejecutadas.',
+    filters: [
+      { key: 'ejercicio', label: 'Ejercicio (año)', type: 'number', placeholder: '2024' },
+      { key: 'jurisdiccion', label: 'Jurisdicción', type: 'text', placeholder: 'ej: 80' },
+      { key: 'entidad', label: 'Entidad', type: 'text', placeholder: 'ej: 206' },
+      { key: 'programa', label: 'Programa', type: 'text', placeholder: 'ej: 1' },
+    ]
+  },
+  transversal_financiero: {
+    label: 'Análisis transversal financiero',
+    path: '/transversal_financiero',
+    desc: 'Análisis transversal financiero del presupuesto nacional: gastos y recursos cruzados.',
+    filters: [
+      { key: 'ejercicio', label: 'Ejercicio (año)', type: 'number', placeholder: '2024' },
+      { key: 'jurisdiccion', label: 'Jurisdicción', type: 'text', placeholder: 'ej: 80' },
+      { key: 'tipo_transaccion', label: 'Tipo transacción', type: 'text', placeholder: 'G o R' },
+    ]
+  }
+};
+
+let currentTab = 'credito';
+let token = '';
+let allData = [];
+let filteredData = [];
+let page = 0;
+let sortCol = null;
+let sortAsc = true;
+const PAGE_SIZE = 25;
+
+// Theme
+const saved = localStorage.getItem('pa_theme') || 'light';
+if (saved === 'dark') applyTheme('dark');
+
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.innerHTML = t === 'dark'
+    ? '<i class="ti ti-sun" aria-hidden="true"></i> Claro'
+    : '<i class="ti ti-moon" aria-hidden="true"></i> Oscuro';
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('pa_theme', next);
+}
+
+// Token
+const savedToken = localStorage.getItem('pa_token');
+if (savedToken) {
+  token = savedToken;
+  document.getElementById('tokenInput').value = savedToken;
+}
+
+function onTokenChange() {}
+function saveToken() {
+  token = document.getElementById('tokenInput').value.trim();
+  if (token) {
+    localStorage.setItem('pa_token', token);
+    const btn = document.getElementById('saveBtn');
+    btn.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i> Guardado';
+    setTimeout(() => { btn.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i> Guardar'; }, 2000);
+  }
+}
+
+// Tabs & filters
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderFilters();
+  clearResults();
+}
+
+function renderFilters() {
+  const ep = ENDPOINTS[currentTab];
+  document.getElementById('endpointDesc').textContent = ep.desc;
+  const c = document.getElementById('filters');
+  c.innerHTML = ep.filters.map(f => `
+    <div>
+      <label for="f_${f.key}">${f.label}</label>
+      <input type="${f.type}" id="f_${f.key}" placeholder="${f.placeholder}" />
+    </div>
+  `).join('');
+}
+
+function clearFilters() { renderFilters(); }
+
+function clearResults() {
+  document.getElementById('resultSection').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  allData = []; filteredData = []; page = 0;
+}
+
+function buildBody() {
+  const ep = ENDPOINTS[currentTab];
+  const filters = {};
+  ep.filters.forEach(f => {
+    const el = document.getElementById('f_' + f.key);
+    if (el && el.value.trim()) {
+      filters[f.key] = f.type === 'number' ? parseInt(el.value) : el.value.trim();
+    }
+  });
+  return Object.keys(filters).length ? { filters } : {};
+}
+
+async function runQuery() {
+  if (!token) {
+    showError('Ingresá y guardá tu token de acceso primero.');
+    document.getElementById('resultSection').style.display = 'block';
+    return;
+  }
+  const ep = ENDPOINTS[currentTab];
+  const format = document.getElementById('formatSel').value;
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader spin" aria-hidden="true"></i> Consultando...';
+
+  document.getElementById('resultSection').style.display = 'block';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('statsRow').innerHTML = '';
+  document.getElementById('pager').innerHTML = '';
+  document.getElementById('tableContainer').innerHTML = '<div class="empty"><i class="ti ti-loader spin" aria-hidden="true" style="font-size:32px;margin-bottom:0.5rem;opacity:0.5"></i><br>Cargando datos...</div>';
+  document.getElementById('exportBtn').style.display = 'none';
+  document.getElementById('exportJsonBtn').style.display = 'none';
+
+  try {
+    const url = `https://www.presupuestoabierto.gob.ar/api/v1${ep.path}?format=${format}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': format === 'json' ? 'application/json' : 'text/csv'
+      },
+      body: JSON.stringify(buildBody())
+    });
+
+    if (res.status === 401) throw new Error('Token inválido o expirado. Verificá tu token en presupuestoabierto.gob.ar.');
+    if (res.status === 403) throw new Error('Acceso denegado. Tu token no tiene permisos para este endpoint.');
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`Error HTTP ${res.status}: ${txt.slice(0,300)}`);
+    }
+
+    if (format === 'csv') {
+      const csv = await res.text();
+      parseCSV(csv);
+    } else {
+      const json = await res.json();
+      parseJSON(json);
+    }
+    document.getElementById('searchInput').value = '';
+  } catch(e) {
+    showError(e.message || 'Error de conexión. Verificá tu token y los filtros ingresados.');
+    document.getElementById('tableContainer').innerHTML = '';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-search" aria-hidden="true"></i> Consultar';
+  }
+}
+
+function parseJSON(data) {
+  let rows = [];
+  if (Array.isArray(data)) rows = data;
+  else if (data && typeof data === 'object') {
+    const firstArr = Object.keys(data).find(k => Array.isArray(data[k]));
+    rows = firstArr ? data[firstArr] : [data];
+  }
+  allData = rows;
+  filteredData = rows;
+  page = 0; sortCol = null;
+  renderStats();
+  renderTable();
+  document.getElementById('exportBtn').style.display = '';
+  document.getElementById('exportJsonBtn').style.display = '';
+}
+
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) {
+    document.getElementById('tableContainer').innerHTML = '<div class="empty">Sin datos en la respuesta.</div>';
+    return;
+  }
+  const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+  const rows = lines.slice(1).map(l => {
+    const vals = l.split(',').map(v => v.replace(/"/g,'').trim());
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = vals[i] !== undefined ? vals[i] : '');
+    return obj;
+  });
+  allData = rows; filteredData = rows;
+  page = 0; sortCol = null;
+  renderStats();
+  renderTable();
+  document.getElementById('exportBtn').style.display = '';
+  document.getElementById('exportJsonBtn').style.display = '';
+}
+
+function renderStats() {
+  const rows = filteredData;
+  const cols = rows.length ? Object.keys(rows[0]).length : 0;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><div class="stat-label">Filas</div><div class="stat-val">${rows.length.toLocaleString('es-AR')}</div></div>
+    <div class="stat"><div class="stat-label">Columnas</div><div class="stat-val">${cols}</div></div>
+    <div class="stat"><div class="stat-label">Endpoint</div><div class="stat-val" style="font-size:14px">${ENDPOINTS[currentTab].label}</div></div>
+    <div class="stat"><div class="stat-label">Estado</div><div class="stat-val" style="font-size:13px"><span class="badge badge-success"><i class="ti ti-check" aria-hidden="true"></i> OK</span></div></div>
+  `;
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  filteredData = q
+    ? allData.filter(row => Object.values(row).some(v => String(v).toLowerCase().includes(q)))
+    : [...allData];
+  page = 0;
+  renderStats();
+  renderTable();
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortAsc = !sortAsc;
+  else { sortCol = col; sortAsc = true; }
+  filteredData.sort((a, b) => {
+    const va = a[col]; const vb = b[col];
+    const na = parseFloat(va); const nb = parseFloat(vb);
+    if (!isNaN(na) && !isNaN(nb)) return sortAsc ? na-nb : nb-na;
+    return sortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+  });
+  page = 0;
+  renderTable();
+}
+
+function isNumeric(val) { return val !== '' && !isNaN(parseFloat(val)) && isFinite(val); }
+
+function renderTable() {
+  const el = document.getElementById('tableContainer');
+  if (!filteredData.length) {
+    el.innerHTML = '<div class="empty"><i class="ti ti-database-off" aria-hidden="true"></i>Sin datos para mostrar.</div>';
+    document.getElementById('pager').innerHTML = '';
+    return;
+  }
+  const cols = Object.keys(filteredData[0]);
+  const start = page * PAGE_SIZE;
+  const slice = filteredData.slice(start, start + PAGE_SIZE);
+  const total = filteredData.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const ths = cols.map(c => {
+    const isSorted = sortCol === c;
+    const icon = isSorted ? (sortAsc ? '↑' : '↓') : '↕';
+    return `<th onclick="sortBy('${c}')" class="${isSorted ? 'sorted' : ''}" title="Ordenar por ${c}">${c} <span class="sort-icon">${icon}</span></th>`;
+  }).join('');
+
+  const trs = slice.map(row =>
+    `<tr>${cols.map(c => {
+      const v = row[c] !== undefined ? row[c] : '';
+      const num = isNumeric(v) && String(v).length > 3;
+      return `<td class="${num ? 'num-cell' : ''}" title="${v}">${num ? Number(v).toLocaleString('es-AR') : v}</td>`;
+    }).join('')}</tr>`
+  ).join('');
+
+  el.innerHTML = `<div class="table-wrap"><table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
+
+  const pager = document.getElementById('pager');
+  if (totalPages > 1) {
+    pager.innerHTML = `
+      <span>Mostrando ${(start+1).toLocaleString('es-AR')}–${Math.min(start+PAGE_SIZE, total).toLocaleString('es-AR')} de ${total.toLocaleString('es-AR')} filas</span>
+      <div class="pager-btns">
+        <button class="btn" onclick="goPage(0)" ${page===0?'disabled':''} title="Primera"><i class="ti ti-chevrons-left" aria-hidden="true"></i></button>
+        <button class="btn" onclick="goPage(${page-1})" ${page===0?'disabled':''} title="Anterior"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+        <span>Pág ${page+1} / ${totalPages}</span>
+        <button class="btn" onclick="goPage(${page+1})" ${page===totalPages-1?'disabled':''} title="Siguiente"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+        <button class="btn" onclick="goPage(${totalPages-1})" ${page===totalPages-1?'disabled':''} title="Última"><i class="ti ti-chevrons-right" aria-hidden="true"></i></button>
+      </div>
+    `;
+  } else {
+    pager.innerHTML = `<span>${total.toLocaleString('es-AR')} fila${total!==1?'s':''} en total</span>`;
+  }
+}
+
+function goPage(n) {
+  page = n;
+  renderTable();
+  document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showError(msg) {
+  document.getElementById('resultSection').style.display = 'block';
+  const eb = document.getElementById('errorBox');
+  eb.style.display = 'flex';
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('tableContainer').innerHTML = '';
+  document.getElementById('statsRow').innerHTML = '';
+}
+
+function exportCSV() {
+  if (!filteredData.length) return;
+  const cols = Object.keys(filteredData[0]);
+  const lines = [cols.join(','), ...filteredData.map(r => cols.map(c => `"${(r[c]||'').toString().replace(/"/g,'""')}"`).join(','))];
+  download(lines.join('\n'), `presupuesto_${currentTab}_${Date.now()}.csv`, 'text/csv');
+}
+
+function exportJSON() {
+  if (!filteredData.length) return;
+  download(JSON.stringify(filteredData, null, 2), `presupuesto_${currentTab}_${Date.now()}.json`, 'application/json');
+}
+
+function download(content, filename, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Init
+renderFilters();
+</script>
+</body>
+</html>
