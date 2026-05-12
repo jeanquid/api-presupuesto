@@ -637,7 +637,7 @@ function buildBody() {
   ep.filters.forEach(f => {
     const el = document.getElementById('f_' + f.key);
     if (el && el.value.trim()) {
-      filters.push([f.key, f.type === 'number' ? parseInt(el.value) : el.value.trim()]);
+      filters.push({ field: f.key, value: f.type === 'number' ? parseInt(el.value) : el.value.trim() });
     }
   });
   return { filters };
