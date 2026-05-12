@@ -640,7 +640,7 @@ function buildBody() {
       filters.push([f.key, f.type === 'number' ? parseInt(el.value) : el.value.trim()]);
     }
   });
-  return filters.length ? { filters } : {};
+  return { filters };
 }
 
 async function runQuery() {
