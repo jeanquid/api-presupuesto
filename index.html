@@ -633,14 +633,14 @@ function clearResults() {
 
 function buildBody() {
   const ep = ENDPOINTS[currentTab];
-  const filters = {};
+  const filters = [];
   ep.filters.forEach(f => {
     const el = document.getElementById('f_' + f.key);
     if (el && el.value.trim()) {
-      filters[f.key] = f.type === 'number' ? parseInt(el.value) : el.value.trim();
+      filters.push([f.key, f.type === 'number' ? parseInt(el.value) : el.value.trim()]);
     }
   });
-  return Object.keys(filters).length ? { filters } : {};
+  return filters.length ? { filters } : {};
 }
 
 async function runQuery() {
