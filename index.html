@@ -633,14 +633,16 @@ function clearResults() {
 
 function buildBody() {
   const ep = ENDPOINTS[currentTab];
-  const filters = [];
+  const conditions = [];
   ep.filters.forEach(f => {
     const el = document.getElementById('f_' + f.key);
     if (el && el.value.trim()) {
-      filters.push({ field: f.key, value: f.type === 'number' ? parseInt(el.value) : el.value.trim() });
+      conditions.push({ field: f.key, value: f.type === 'number' ? parseInt(el.value) : el.value.trim() });
     }
   });
-  return { filters };
+  if (conditions.length === 0) return {};
+  if (conditions.length === 1) return { filters: conditions[0] };
+  return { filters: { operator: 'AND', conditions } };
 }
 
 async function runQuery() {
